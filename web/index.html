@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
@@ -18,7 +18,7 @@
             margin: 0 auto;
             color: #ecf0f1;
         }
-        input {
+        .add {
             border: 0;
             outline: 0;
             width: 300px;
@@ -75,8 +75,8 @@
         <section>
             <h3>TODO LIST (任务列表)</h3>
         </section>
-        <section class="input">
-            <input placeholder="请输入您要做的事情">
+        <section>
+            <input class="add" placeholder="请输入您要做的事情">
         </section>
         <section class="todo">
             <header>未完成的任务</header>
@@ -90,19 +90,26 @@
         </section>
 
         <script>
-            $("input").on('keypress', function (e) {
+            // 新建任务
+            $(".add").on('keypress', function (e) {
                 var v = $(this).val();
                 if (e.keyCode === 13 && v !== "") {
-                    var html = `
-<p>
-    <span>${v}</span>
-    <i class="finish">归档</i>
-    <i class="del">删除</i>
-</p>`;
-                    $(html).prependTo(".todo div");
-                    $(this).val("");
+                    $.ajax({
+                        method: "post",
+                        url: "task/add",
+                        data: { body: v },
+                        success: function (data) {
+                            addTask(1, v);
+                            $(".add").val("");
+                        },
+                        error: function(err) {
+                            alert("创建任务失败: " + err);
+                        }
+                    });
                 }
             });
+
+            // 删除跟归档
             $(".todo")
                 .on('click', '.del', function (ev) {
                     $(this).closest("p").remove();
@@ -115,6 +122,34 @@
                 .on('click', '.del', function (ev) {
                     $(this).closest("p").remove();
                 });
+
+            // 将任务添加到 dom 中
+            // type: 1 代表插入到 .todo; 2 代表插入到 .done
+            // body: 表示插入的内容
+            function addTask(type, body) {
+                var html = `
+                    <p>
+                        <span>${body}</span>
+                        ${type === 1 ? '<i class="finish">归档</i>' : ''}
+                        <i class="del">删除</i>
+                    </p>`;
+                $(html).prependTo(type === 1 ? ".todo div" : ".done div");
+            }
+
+            // 页面的初始化加载
+            function initTasks() {
+                $.get({
+                    url: "task/list",
+                    dataType: "json"
+                }).done(function (data) {
+                    $.each(data, function (i, e) {
+                        addTask(e.state, e.body);
+                    });
+                });
+            }
+
+            // 开始加载
+            initTasks();
         </script>
     </div>
 </body>
