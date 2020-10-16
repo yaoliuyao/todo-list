@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.js"></script>
+    <title>Todo List</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(to right, #e74c3c, #8e44ad);
+        }
+        .container {
+            width: 300px;
+            margin: 0 auto;
+            color: #ecf0f1;
+        }
+        input {
+            border: 0;
+            outline: 0;
+            width: 300px;
+            padding: 5px;
+            box-shadow: 0 0 5px inset #999;
+            border-radius: 5px;
+        }
+        .todo {
+            margin-top: 15px;
+        }
+        .todo header {
+            font-weight: bolder;
+            text-shadow: 0 1px 3px darkslategrey;
+        }
+        .todo p {
+            background: rgba(255, 255, 255, 0.7);
+            color: black;
+            margin-top: 10px;
+            padding: 5px 8px;
+            width: 300px;
+            border-radius: 5px;
+            box-shadow: 0 0 1px #ffffff;
+        }
+        .todo i {
+            font-style: normal;
+            cursor: pointer;
+            color: darkblue;
+            float: right;
+            margin-right: 5px;
+        }
+        .done {
+            margin-top: 15px;
+        }
+        .done p {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            margin-top: 10px;
+            padding: 5px 8px;
+            width: 300px;
+            border-radius: 5px;
+            box-shadow: 0 0 1px black;
+        }
+        .done i {
+            font-style: normal;
+            cursor: pointer;
+            color: deepskyblue;
+            float: right;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <section>
+            <h3>TODO LIST (任务列表)</h3>
+        </section>
+        <section class="input">
+            <input placeholder="请输入您要做的事情">
+        </section>
+        <section class="todo">
+            <header>未完成的任务</header>
+            <div>
+            </div>
+        </section>
+        <section class="done">
+            <header>已完成的任务</header>
+            <div>
+            </div>
+        </section>
+
+        <script>
+            $("input").on('keypress', function (e) {
+                var v = $(this).val();
+                if (e.keyCode === 13 && v !== "") {
+                    var html = `
+<p>
+    <span>${v}</span>
+    <i class="finish">归档</i>
+    <i class="del">删除</i>
+</p>`;
+                    $(html).prependTo(".todo div");
+                    $(this).val("");
+                }
+            });
+            $(".todo")
+                .on('click', '.del', function (ev) {
+                    $(this).closest("p").remove();
+                })
+                .on('click', '.finish', function (ev) {
+                    $(this).closest("p").prependTo(".done div");
+                    $(this).remove();
+                });
+            $(".done")
+                .on('click', '.del', function (ev) {
+                    $(this).closest("p").remove();
+                });
+        </script>
+    </div>
+</body>
+</html>
