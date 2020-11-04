@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>使用 Vue 实现的 TODO-LIST</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(to bottom, black, white, grey);
+        }
+        #app {
+            width: 500px;
+            margin: 1em auto;
+            background: white;
+            padding: 1em;
+        }
+        input {
+            border: 0;
+            outline: 0;
+            border-bottom: 1px solid grey;
+            width: 100%;
+            padding: 8px 12px;
+        }
+        input:hover {
+            border-bottom: 1px solid blue;
+        }
+        .task-todo, .task-done {
+            display: flex;
+        }
+        .task-todo p, .task-done div {
+            flex: 1;
+        }
+        button {
+            flex: 0 0 50px;
+            height: 25px;
+            border: 0;
+            outline: 0;
+            color: white;
+            background: linear-gradient(70deg, red, green, blue);
+            padding: 5px 10px;
+            margin-left: 1em;
+        }
+        button:hover {
+            background: linear-gradient(to right, green, blue, yellow);
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <header>
+        <h3>任务列表 (todo-list)</h3>
+    </header>
+
+    <div>
+        <input v-model="shuruneirong" @keydown.13="addTask" placeholder="请输入任务">
+    </div>
+
+    <div>
+        <h3>未完成任务</h3>
+        <div class="tasks-todo">
+            <div class="task-todo" v-for="task in tasksTodo">
+                <p class="task-body">{{task.body}}</p>
+                <button class="task-del" @click="delTodo(task.id)">删除</button>
+                <button class="task-arch" @click="archTodo(task.id)">归档</button>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <h3>已完成任务</h3>
+        <div class="tasks-done">
+            <div class="task-done" v-for="task in tasksDone">
+                <span class="task-desc">{{task.body}}</span>
+                <button class="task-del" @click="delDone(task.id)">删除</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var options = {
+        el: "#app",
+        data: {
+            shuruneirong: "",
+            tasksTodo: [],
+            tasksDone: []
+        },
+        methods: {
+            addTask: function () {
+                // 多分部的格式进行发送，要求 Servlet 上面 @MultiPart
+                // 优势是，可以发送文件
+                // var formData = new FormData();
+                // formData.append("body", this.shuruneirong);
+
+                // 就是普通的 a=b&b=c 的格式进行发送
+                // 缺点是，不可以发送文件
+                var rsp = new URLSearchParams();
+                rsp.append("body", this.shuruneirong);
+
+                axios({
+                    url: "task/add",
+                    method: "post",
+                    data: rsp
+                }).then(resp => {
+                    this.shuruneirong = "";
+                    this.loadTasks();
+                });
+            },
+            delTodo: function (id) {
+                axios.get("task/delTodo?id=" + id)
+                    .then(resp => {
+                        this.loadTasks();
+                    })
+            },
+            archTodo: function (id) {
+                axios.get("task/archive?id=" + id)
+                    .then(resp => {
+                        this.loadTasks();
+                    })
+            },
+            delDone: function (id) {
+                axios.get("task/delDone?id=" + id)
+                    .then(resp => {
+                        this.loadTasks();
+                    })
+            },
+            loadTasks: function () {
+                axios({
+                    url: "task/list"
+                }).then(resp => {
+                    // this.tasksTodo = [];
+                    // this.tasksDone = [];
+                    // resp.data.forEach(e => {
+                    //     if (e.state === 1) {
+                    //         this.tasksTodo.push(e);
+                    //     } else if (e.state === 2) {
+                    //         this.tasksDone.push(e);
+                    //     }
+                    // });
+
+                    // 还可以这么写
+                    this.tasksTodo = resp.data.filter(e => e.state === 1);
+                    this.tasksDone = resp.data.filter(e => e.state === 2);
+                })
+            }
+        },
+        created: function () {
+            this.loadTasks();
+        },
+        mounted: function () {
+            console.log("页面加载完之后要做的事")
+        }
+    };
+    var vm = new Vue(options);
+</script>
+
+</body>
+</html>
